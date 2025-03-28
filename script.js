@@ -1103,3 +1103,4 @@ function setupAutoSave(editorId, indicatorId, saveBtnId) {
 // Setup auto-save for both editors
 setupAutoSave('newNoteContent', 'autoSaveIndicator', 'saveNoteBtn');
 setupAutoSave('editNoteContent', 'editAutoSaveIndicator', 'saveEditNoteBtn');
+
