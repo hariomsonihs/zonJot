@@ -19,6 +19,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const themeOptionsContainer = document.getElementById('themeOptionsContainer');
     
+    // View Note Elements
+    const viewNoteContainer = document.getElementById('viewNoteContainer');
+    const viewNoteTitle = document.getElementById('viewNoteTitle');
+    const viewNoteContent = document.getElementById('viewNoteContent');
+    const viewNoteImage = document.getElementById('viewNoteImage');
+    const viewNoteImageContainer = document.getElementById('viewNoteImageContainer');
+    const viewNoteTags = document.getElementById('viewNoteTags');
+    const viewNoteDate = document.getElementById('viewNoteDate');
+    const viewNoteCategory = document.getElementById('viewNoteCategory');
+    const editNoteBtn = document.getElementById('editNoteBtn');
+    const closeViewBtn = document.getElementById('closeViewBtn');
+    
+    // Create save status element
+    const saveStatus = document.createElement('div');
+    saveStatus.className = 'save-status';
+    document.body.appendChild(saveStatus);
+    
     // New elements for added features
     const noteCategory = document.getElementById('noteCategory');
     const addCategoryBtn = document.getElementById('addCategoryBtn');
@@ -45,6 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let notes = JSON.parse(localStorage.getItem('notes')) || [];
     let noteCounter = notes.length > 0 ? Math.max(...notes.map(note => note.id)) + 1 : 1;
     let currentlyEditingId = null;
+    let currentViewingId = null;
     let currentImageDataUrl = null;
     let currentEditImageDataUrl = null;
     let currentSortMethod = 'newest';
@@ -53,6 +71,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let isSaving = false;
     let currentFilter = 'all';
     let categories = JSON.parse(localStorage.getItem('categories')) || ['general', 'work', 'personal', 'ideas'];
+    let autoSaveTimer = null;
+    let autoSaveDelay = 2000; // 2 seconds delay for auto-save
     
     // Initialize the app
     initApp();
@@ -63,6 +83,54 @@ document.addEventListener('DOMContentLoaded', function() {
         applyTheme(localStorage.getItem('theme') || 'light');
         setupVoiceRecognition();
         updateCategoryDropdown();
+        setupAutoSave();
+    }
+    
+    function setupAutoSave() {
+        // Auto-save for new note
+        newNoteTitle.addEventListener('input', triggerAutoSave);
+        newNoteContent.addEventListener('input', triggerAutoSave);
+        
+        // Auto-save for edit note
+        editNoteTitle.addEventListener('input', triggerAutoSave);
+        editNoteContent.addEventListener('input', triggerAutoSave);
+        
+        // Auto-save for image changes
+        imageInput.addEventListener('change', triggerAutoSave);
+        editImageInput.addEventListener('change', triggerAutoSave);
+    }
+    
+    function triggerAutoSave() {
+        // Show saving status
+        showSaveStatus('saving');
+        
+        // Clear any existing timer
+        if (autoSaveTimer) {
+            clearTimeout(autoSaveTimer);
+        }
+        
+        // Set new timer
+        autoSaveTimer = setTimeout(() => {
+            if (newNoteContainer.classList.contains('active')) {
+                saveNewNote();
+            } else if (editNoteContainer.classList.contains('active')) {
+                saveEditedNote(); // Bas yeh call karo, close nahi karo
+            }
+            
+            // Status update karo
+            showSaveStatus('saved');
+        }, autoSaveDelay);
+    }
+    
+    function showSaveStatus(status) {
+        saveStatus.textContent = status === 'saving' ? 'Saving...' : 'Saved';
+        saveStatus.className = 'save-status show ' + status;
+        
+        if (status === 'saved') {
+            setTimeout(() => {
+                saveStatus.classList.remove('show');
+            }, 2000);
+        }
     }
     
     function setupEventListeners() {
@@ -275,7 +343,8 @@ document.addEventListener('DOMContentLoaded', function() {
         isSaving = true;
         
         try {
-            saveEditedNote();
+            saveEditedNote(); // Changes save honge
+            closeEditNoteEditor(); // Explicitly close karo
         } catch (error) {
             console.error('Save error:', error);
             showToast('Error saving changes');
@@ -366,6 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function openNewNoteEditor(e) {
         if (e) e.preventDefault();
         closeEditNoteEditor();
+        closeViewNote();
         newNoteContainer.classList.add('active');
         createOverlay();
         newNoteTitle.value = '';
@@ -391,6 +461,69 @@ document.addEventListener('DOMContentLoaded', function() {
         removeOverlay();
         currentImageDataUrl = null;
         imageInput.value = '';
+    }
+    
+    function openViewNote(noteId) {
+        const note = notes.find(n => n.id === noteId);
+        if (!note) return;
+        
+        currentViewingId = noteId;
+        
+        // Set note content
+        viewNoteTitle.textContent = note.title;
+        viewNoteContent.innerHTML = note.content || '<p>No content</p>';
+        
+        // Set image
+        if (note.image) {
+            viewNoteImage.src = note.image;
+            viewNoteImage.style.display = 'block';
+        } else {
+            viewNoteImage.style.display = 'none';
+        }
+        
+        // Set tags
+        viewNoteTags.innerHTML = '';
+        if (note.tags && note.tags.length > 0) {
+            note.tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.textContent = tag;
+                viewNoteTags.appendChild(tagElement);
+            });
+        }
+        
+        // Set date and category
+        const date = new Date(note.timestamp);
+        viewNoteDate.textContent = date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+        
+        viewNoteCategory.textContent = note.category || 'general';
+        
+        // Show view container
+        viewNoteContainer.classList.add('active');
+        createOverlay();
+        
+        // Setup edit button
+        editNoteBtn.onclick = (e) => {
+            e.preventDefault();
+            closeViewNote();
+            openEditNoteEditor(noteId);
+        };
+        
+        // Setup close button
+        closeViewBtn.onclick = (e) => {
+            e.preventDefault();
+            closeViewNote();
+        };
+    }
+    
+    function closeViewNote() {
+        viewNoteContainer.classList.remove('active');
+        removeOverlay();
+        currentViewingId = null;
     }
     
     function openEditNoteEditor(noteId, e) {
@@ -442,6 +575,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Hide new note container if open
         closeNewNoteEditor();
+        closeViewNote();
         
         // Show edit container
         editNoteContainer.classList.add('active');
@@ -463,14 +597,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function createOverlay() {
-        const overlay = document.createElement('div');
-        overlay.className = 'overlay active';
-        overlay.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeNewNoteEditor();
-            closeEditNoteEditor();
-        });
-        document.body.appendChild(overlay);
+        const overlay = document.querySelector('.overlay');
+        if (!overlay) {
+            const newOverlay = document.createElement('div');
+            newOverlay.className = 'overlay active';
+            newOverlay.addEventListener('click', (e) => {
+                e.preventDefault();
+                closeNewNoteEditor();
+                closeEditNoteEditor();
+                closeViewNote();
+            });
+            document.body.appendChild(newOverlay);
+        }
     }
     
     function removeOverlay() {
@@ -545,6 +683,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderNotes(notes);
         closeNewNoteEditor();
         showToast('Note added successfully!');
+        showSaveStatus('saved');
     }
     
     function saveEditedNote() {
@@ -562,17 +701,21 @@ document.addEventListener('DOMContentLoaded', function() {
             notes[noteIndex].tags = tags;
             notes[noteIndex].pinned = pinEditNoteBtn.classList.contains('active');
             
-            // Only update image if a new one was selected or removed
             if (currentEditImageDataUrl !== undefined) {
                 notes[noteIndex].image = currentEditImageDataUrl;
             }
             
             saveNotes();
             renderNotes(notes);
-            showToast('Note updated successfully!');
+            showToast('Changes auto-saved');
+            showSaveStatus('saved');
+            
+            // Yeh line hata do jo edit mode close kar rahi thi
+            // closeEditNoteEditor(); 
         }
         
-        closeEditNoteEditor();
+        // Isko bhi comment out kar do
+        // closeEditNoteEditor();
     }
     
     function deleteNote(noteId, e) {
@@ -593,6 +736,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // If deleting the note being edited, hide the edit container
             if (currentlyEditingId === noteId) {
                 closeEditNoteEditor();
+            }
+            
+            // If deleting the note being viewed, hide the view container
+            if (currentViewingId === noteId) {
+                closeViewNote();
             }
         }
     }
@@ -708,7 +856,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             notesList.appendChild(noteElement);
             
-            // Add click event to edit note
+            // Add click event to view note
             noteElement.addEventListener('click', function(e) {
                 handleNoteClick(e, note.id);
             });
@@ -744,7 +892,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!isDeleteBtn && !isArchiveBtn && !isImage) {
             e.preventDefault();
-            openEditNoteEditor(noteId, e);
+            openViewNote(noteId);
         }
     }
     

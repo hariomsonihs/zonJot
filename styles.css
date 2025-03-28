@@ -64,7 +64,6 @@ body {
     color: var(--text-color);
     line-height: 1.6;
     padding: 20px;
-    user-select:none;
 }
 
 .app-container {
@@ -800,4 +799,137 @@ body {
     padding-left: 10px;
     margin-left: 0;
     color: #666;
+}
+
+/* View Note Container Styles */
+.note-viewer-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    background: var(--background-color);
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.note-viewer-container.active {
+    display: flex;
+}
+
+.note-viewer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+.note-viewer-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-color);
+    flex-grow: 1;
+}
+
+.note-content-view {
+    padding: 15px 0;
+    line-height: 1.6;
+    color: var(--text-color);
+    overflow-wrap: break-word;
+}
+
+.note-content-view img {
+    max-width: 100%;
+    height: auto;
+}
+
+.note-viewer-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* Auto-save indicator */
+.save-status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    display: none;
+    z-index: 100;
+}
+
+.save-status.show {
+    display: block;
+}
+
+.save-status.saving {
+    background: rgba(76, 175, 80, 0.9);
+}
+
+.save-status.saved {
+    background: rgba(33, 150, 243, 0.9);
+}
+#editNoteBtn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-left: 10px;
+}
+
+
+#editNoteBtn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+/* Close Button in View Mode */
+#closeViewBtn {
+    background-color: #f0f0f0;
+    color: #555;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+#closeViewBtn:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+#closeViewBtn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
