@@ -58,21 +58,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Voice note elements
     const voiceNoteBtn = document.getElementById('voiceNoteBtn');
     
-    // App state
-    let notes = JSON.parse(localStorage.getItem('notes')) || [];
-    let noteCounter = notes.length > 0 ? Math.max(...notes.map(note => note.id)) + 1 : 1;
-    let currentlyEditingId = null;
-    let currentViewingId = null;
-    let currentImageDataUrl = null;
-    let currentEditImageDataUrl = null;
-    let currentSortMethod = 'newest';
-    let voiceRecognition = null;
-    let isRecording = false;
-    let isSaving = false;
-    let currentFilter = 'all';
-    let categories = JSON.parse(localStorage.getItem('categories')) || ['general', 'work', 'personal', 'ideas'];
-    let autoSaveTimer = null;
-    let autoSaveDelay = 2000; // 2 seconds delay for auto-save
+    // Modify the app state to track if we're creating a new note
+let notes = JSON.parse(localStorage.getItem('notes')) || [];
+let noteCounter = notes.length > 0 ? Math.max(...notes.map(note => note.id)) + 1 : 1;
+let currentlyEditingId = null;
+let currentViewingId = null;
+let currentImageDataUrl = null;
+let currentEditImageDataUrl = null;
+let currentSortMethod = 'newest';
+let voiceRecognition = null;
+let isRecording = false;
+let isSaving = false;
+let currentFilter = 'all';
+let categories = JSON.parse(localStorage.getItem('categories')) || ['general', 'work', 'personal', 'ideas'];
+let autoSaveTimer = null;
+let autoSaveDelay = 200; //0.5 seconds
+let currentNewNoteId = null; // Add this to track new note being created
     
     // Initialize the app
     initApp();
@@ -100,27 +101,23 @@ document.addEventListener('DOMContentLoaded', function() {
         editImageInput.addEventListener('change', triggerAutoSave);
     }
     
-    function triggerAutoSave() {
-        // Show saving status
-        showSaveStatus('saving');
-        
-        // Clear any existing timer
-        if (autoSaveTimer) {
-            clearTimeout(autoSaveTimer);
-        }
-        
-        // Set new timer
-        autoSaveTimer = setTimeout(() => {
-            if (newNoteContainer.classList.contains('active')) {
-                saveNewNote();
-            } else if (editNoteContainer.classList.contains('active')) {
-                saveEditedNote(); // Bas yeh call karo, close nahi karo
-            }
-            
-            // Status update karo
-            showSaveStatus('saved');
-        }, autoSaveDelay);
+    // Modify triggerAutoSave function
+function triggerAutoSave() {
+    showSaveStatus('saving');
+    
+    if (autoSaveTimer) {
+        clearTimeout(autoSaveTimer);
     }
+    
+    autoSaveTimer = setTimeout(() => {
+        if (newNoteContainer.classList.contains('active')) {
+            saveNewNote(); // This will either create or update the note
+        } else if (editNoteContainer.classList.contains('active')) {
+            saveEditedNote();
+        }
+        showSaveStatus('saved');
+    }, autoSaveDelay);
+}
     
     function showSaveStatus(status) {
         saveStatus.textContent = status === 'saving' ? 'Saving...' : 'Saved';
@@ -326,7 +323,8 @@ document.addEventListener('DOMContentLoaded', function() {
         isSaving = true;
         
         try {
-            saveNewNote();
+            saveNewNote(); // कंटेंट सेव होगा
+            closeNewNoteEditor(); // सिर्फ मैनुअल सेव पर बंद करें
         } catch (error) {
             console.error('Save error:', error);
             showToast('Error saving note');
@@ -448,6 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
         pinNoteBtn.classList.remove('active');
         newNoteTags.value = '';
         newNoteTags.nextElementSibling.innerHTML = '';
+        currentNewNoteId = null; // Reset when opening new editor
         
         setTimeout(() => {
             newNoteTitle.focus();
@@ -461,6 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
         removeOverlay();
         currentImageDataUrl = null;
         imageInput.value = '';
+        currentNewNoteId = null; // Reset when closing
     }
     
     function openViewNote(noteId) {
@@ -660,32 +660,56 @@ document.addEventListener('DOMContentLoaded', function() {
         editImageInput.value = '';
     }
     
-    function saveNewNote() {
-        const title = newNoteTitle.value.trim() || `Note ${notes.length + 1}`;
-        const content = newNoteContent.innerHTML.trim() || '<p>Click to edit this note...</p>';
-        const tags = getTagsFromContainer(newNoteTags.nextElementSibling);
-        
-        const newNote = {
-            id: noteCounter++,
-            title: title,
-            content: content,
-            image: currentImageDataUrl,
-            category: noteCategory.value,
-            tags: tags,
-            pinned: pinNoteBtn.classList.contains('active'),
-            archived: false,
-            timestamp: new Date().toISOString(),
-            lastEdited: new Date().toISOString()
-        };
-        
-        notes.unshift(newNote);
-        saveNotes();
-        renderNotes(notes);
-        closeNewNoteEditor();
-        showToast('Note added successfully!');
-        showSaveStatus('saved');
+    // Modify saveNewNote function to update existing note if it exists
+function saveNewNote() {
+    const title = newNoteTitle.value.trim() || `Note ${notes.length + 1}`;
+    const content = newNoteContent.innerHTML.trim() || '<p>Click to edit this note...</p>';
+    const tags = getTagsFromContainer(newNoteTags.nextElementSibling);
+    
+    const noteData = {
+        title: title,
+        content: content,
+        image: currentImageDataUrl,
+        category: noteCategory.value,
+        tags: tags,
+        pinned: pinNoteBtn.classList.contains('active'),
+        archived: false,
+        timestamp: currentNewNoteId ? notes.find(n => n.id === currentNewNoteId)?.timestamp : new Date().toISOString(),
+        lastEdited: new Date().toISOString()
+    };
+
+    if (currentNewNoteId) {
+        // Update existing note
+        const noteIndex = notes.findIndex(n => n.id === currentNewNoteId);
+        if (noteIndex !== -1) {
+            notes[noteIndex] = { ...notes[noteIndex], ...noteData };
+        }
+    } else {
+        // Create new note
+        noteData.id = noteCounter++;
+        currentNewNoteId = noteData.id;
+        notes.unshift(noteData);
     }
     
+    saveNotes();
+    renderNotes(notes);
+    showToast('Note auto-saved');
+    showSaveStatus('saved');
+}
+    
+    function resetNewNoteEditor() {
+        newNoteTitle.value = '';
+        newNoteContent.innerHTML = '<p></p>';
+        currentImageDataUrl = null;
+        imagePreview.style.display = 'none';
+        removeImageBtn.style.display = 'none';
+        pinNoteBtn.classList.remove('active');
+        newNoteTags.value = '';
+        newNoteTags.nextElementSibling.innerHTML = '';
+    }
+    
+    // फिर saveNewNote() में अंत में इसे कॉल करें:
+    resetNewNoteEditor();
     function saveEditedNote() {
         if (!currentlyEditingId) return;
         

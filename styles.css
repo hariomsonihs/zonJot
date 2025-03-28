@@ -933,3 +933,6 @@ body {
     transform: translateY(0);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
+.overlay.active {
+    pointer-events: none; /* Allows clicks to pass through to editor */
+}
