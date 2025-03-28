@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentSortMethod = 'newest';
     let voiceRecognition = null;
     let isRecording = false;
+    let isSaving = false; // Flag to prevent multiple saves
     
     // Initialize the app
     initApp();
@@ -53,69 +54,78 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function setupEventListeners() {
-        // Add new note button - using both click and touch events
+        // Add new note button
         addNoteBtn.addEventListener('click', openNewNoteEditor);
-        addNoteBtn.addEventListener('touchend', openNewNoteEditor);
+        addNoteBtn.addEventListener('touchend', handleTouchEvent(openNewNoteEditor));
         
-        // Save buttons - improved for mobile
+        // Save buttons with enhanced mobile handling
         saveNoteBtn.addEventListener('click', handleSaveNote);
-        saveNoteBtn.addEventListener('touchend', handleSaveNote);
+        saveNoteBtn.addEventListener('touchend', handleTouchEvent(handleSaveNote));
         
         saveEditNoteBtn.addEventListener('click', handleSaveEditNote);
-        saveEditNoteBtn.addEventListener('touchend', handleSaveEditNote);
+        saveEditNoteBtn.addEventListener('touchend', handleTouchEvent(handleSaveEditNote));
         
         // Cancel buttons
         cancelNoteBtn.addEventListener('click', closeNewNoteEditor);
-        cancelNoteBtn.addEventListener('touchend', closeNewNoteEditor);
+        cancelNoteBtn.addEventListener('touchend', handleTouchEvent(closeNewNoteEditor));
         
         cancelEditNoteBtn.addEventListener('click', closeEditNoteEditor);
-        cancelEditNoteBtn.addEventListener('touchend', closeEditNoteEditor);
+        cancelEditNoteBtn.addEventListener('touchend', handleTouchEvent(closeEditNoteEditor));
         
         // Image upload for new note
         imageUploadBtn.addEventListener('click', () => imageInput.click());
-        imageUploadBtn.addEventListener('touchend', () => imageInput.click());
+        imageUploadBtn.addEventListener('touchend', handleTouchEvent(() => imageInput.click()));
         imageInput.addEventListener('change', handleImageUpload);
         removeImageBtn.addEventListener('click', removeImage);
-        removeImageBtn.addEventListener('touchend', removeImage);
+        removeImageBtn.addEventListener('touchend', handleTouchEvent(removeImage));
         
         // Image upload for edit note
         editImageUploadBtn.addEventListener('click', () => editImageInput.click());
-        editImageUploadBtn.addEventListener('touchend', () => editImageInput.click());
+        editImageUploadBtn.addEventListener('touchend', handleTouchEvent(() => editImageInput.click()));
         editImageInput.addEventListener('change', handleEditImageUpload);
         removeEditImageBtn.addEventListener('click', removeEditImage);
-        removeEditImageBtn.addEventListener('touchend', removeEditImage);
+        removeEditImageBtn.addEventListener('touchend', handleTouchEvent(removeEditImage));
         
         // Voice note functionality
         voiceNoteBtn.addEventListener('click', toggleVoiceRecording);
-        voiceNoteBtn.addEventListener('touchend', toggleVoiceRecording);
+        voiceNoteBtn.addEventListener('touchend', handleTouchEvent(toggleVoiceRecording));
         
         // Search functionality
         searchInput.addEventListener('input', searchNotes);
         clearSearchBtn.addEventListener('click', clearSearch);
-        clearSearchBtn.addEventListener('touchend', clearSearch);
+        clearSearchBtn.addEventListener('touchend', handleTouchEvent(clearSearch));
         
         // Sort functionality
         sortBtn.addEventListener('click', toggleSortMethod);
-        sortBtn.addEventListener('touchend', toggleSortMethod);
+        sortBtn.addEventListener('touchend', handleTouchEvent(toggleSortMethod));
         
         // Theme toggle
         themeToggleBtn.addEventListener('click', toggleThemeOptions);
-        themeToggleBtn.addEventListener('touchend', toggleThemeOptions);
+        themeToggleBtn.addEventListener('touchend', handleTouchEvent(toggleThemeOptions));
         
         // Format buttons
         document.querySelectorAll('.format-btn').forEach(button => {
             button.addEventListener('click', handleFormatButton);
-            button.addEventListener('touchend', handleFormatButton);
+            button.addEventListener('touchend', handleTouchEvent(handleFormatButton));
         });
     }
     
+    // Special touch event handler for mobile devices
+    function handleTouchEvent(handler) {
+        return function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handler(e);
+        };
+    }
+    
     function toggleThemeOptions(e) {
-        e.preventDefault();
+        if (e) e.preventDefault();
         themeOptionsContainer.classList.toggle('show');
     }
     
     function handleFormatButton(e) {
-        e.preventDefault();
+        if (e) e.preventDefault();
         const command = this.getAttribute('data-command');
         const value = this.getAttribute('data-value');
         document.execCommand(command, false, value || null);
@@ -124,13 +134,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function handleSaveNote(e) {
-        e.preventDefault();
-        saveNewNote();
+        if (e) e.preventDefault();
+        if (isSaving) return;
+        isSaving = true;
+        
+        try {
+            saveNewNote();
+        } catch (error) {
+            console.error('Save error:', error);
+            showToast('Error saving note');
+        } finally {
+            setTimeout(() => {
+                isSaving = false;
+            }, 1000);
+        }
     }
     
     function handleSaveEditNote(e) {
-        e.preventDefault();
-        saveEditedNote();
+        if (e) e.preventDefault();
+        if (isSaving) return;
+        isSaving = true;
+        
+        try {
+            saveEditedNote();
+        } catch (error) {
+            console.error('Save error:', error);
+            showToast('Error saving changes');
+        } finally {
+            setTimeout(() => {
+                isSaving = false;
+            }, 1000);
+        }
     }
     
     function setupVoiceRecognition() {
@@ -174,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function toggleVoiceRecording(e) {
-        e.preventDefault();
+        if (e) e.preventDefault();
         if (!voiceRecognition) {
             showToast('Voice recognition not supported in your browser');
             return;
