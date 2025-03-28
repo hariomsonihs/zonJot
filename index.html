@@ -45,6 +45,10 @@
             <button class="sort-btn" id="sortBtn">
                 <i class="fas fa-sort"></i> Sort
             </button>
+            <!-- New Feature: Export Notes -->
+            <button class="export-btn" id="exportNotesBtn" title="Export Notes">
+                <i class="fas fa-download"></i> Export
+            </button>
         </div>
     </div>
         
@@ -69,6 +73,10 @@
             <h2 id="viewNoteTitle"></h2>
             <div class="viewer-actions">
                 <button id="editNoteBtn" class="btn edit-btn"><i class="fas fa-edit"></i> Edit</button>
+                <!-- New Feature: Share Note -->
+                <button id="shareNoteBtn" class="btn share-btn" title="Share Note">
+                    <i class="fas fa-share-alt"></i> Share
+                </button>
                 <button id="closeViewBtn" class="btn close-btn"><i class="fas fa-times"></i></button>
             </div>
         </div>
@@ -85,7 +93,7 @@
         </div>
     </div>
             
-    <!-- New note editor container -->
+    <!-- New Note Editor Container -->
     <div class="note-editor-container" id="newNoteContainer">
         <div class="editor-toolbar">
             <button class="format-btn" data-command="bold"><i class="fas fa-bold"></i></button>
@@ -112,10 +120,24 @@
                 <button class="pin-note-btn" id="pinNoteBtn" title="Pin Note">
                     <i class="far fa-thumbtack"></i>
                 </button>
+                <!-- New Feature: Reminder -->
+                <button class="reminder-btn" id="setReminderBtn" title="Set Reminder">
+                    <i class="fas fa-bell"></i>
+                </button>
                 <div class="word-count">0 words</div>
             </div>
         </div>
         
+        <!-- New Feature: Note Templates -->
+        <div class="template-selector">
+            <select id="noteTemplate">
+                <option value="none">No Template</option>
+                <option value="meeting">Meeting Notes</option>
+                <option value="todo">To-Do List</option>
+                <option value="journal">Journal Entry</option>
+            </select>
+        </div>
+
         <div class="note-content-editor" id="newNoteContent" contenteditable="true" placeholder="Start typing your note here..."></div>
         <div class="editor-actions">
             <div class="attachment-options">
@@ -128,6 +150,8 @@
                 </button>
             </div>
             <div class="editor-buttons">
+                <!-- New Feature: Auto-Save Indicator -->
+                <span class="auto-save-indicator" id="autoSaveIndicator">Saved</span>
                 <button class="cancel-note-btn" id="cancelNoteBtn">Close</button>
                 <button class="save-note-btn" id="saveNoteBtn">Save Note</button>
             </div>
@@ -138,7 +162,7 @@
         </div>
     </div>
     
-    <!-- Edit note container (hidden by default) -->
+    <!-- Edit Note Container (hidden by default) -->
     <div class="note-editor-container" id="editNoteContainer">
         <div class="editor-toolbar">
             <button class="format-btn" data-command="bold"><i class="fas fa-bold"></i></button>
@@ -165,6 +189,10 @@
                 <button class="pin-note-btn" id="pinEditNoteBtn" title="Pin Note">
                     <i class="far fa-thumbtack"></i>
                 </button>
+                <!-- New Feature: Reminder -->
+                <button class="reminder-btn" id="editSetReminderBtn" title="Set Reminder">
+                    <i class="fas fa-bell"></i>
+                </button>
                 <div class="word-count">0 words</div>
             </div>
         </div>
@@ -178,6 +206,8 @@
                 <input type="file" id="editImageInput" accept="image/*" style="display: none;">
             </div>
             <div class="editor-buttons">
+                <!-- New Feature: Auto-Save Indicator -->
+                <span class="auto-save-indicator" id="editAutoSaveIndicator">Saved</span>
                 <button class="cancel-note-btn" id="cancelEditNoteBtn">Close</button>
                 <button class="save-note-btn" id="saveEditNoteBtn">Save Changes</button>
             </div>

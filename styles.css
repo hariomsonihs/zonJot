@@ -1125,3 +1125,122 @@ body[data-theme="purple"] #addCategoryBtn {
 body[data-theme="purple"] #addCategoryBtn:hover {
     background-color: #7c4dff;
 }
+/* Export Button */
+.export-btn {
+    padding: 8px 15px;
+    background-color: #6200ea;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.export-btn:hover {
+    background-color: #7c4dff;
+    transform: scale(1.05);
+}
+
+.export-btn i {
+    margin-right: 5px;
+}
+
+/* Share Button */
+.share-btn {
+    background-color: #6200ea;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.share-btn:hover {
+    background-color: #7c4dff;
+    transform: scale(1.05);
+}
+
+.share-btn i {
+    margin-right: 5px;
+}
+
+/* Reminder Button */
+.reminder-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #6200ea;
+    padding: 5px;
+    transition: all 0.3s ease;
+}
+
+.reminder-btn:hover {
+    color: #7c4dff;
+    transform: scale(1.1);
+}
+
+/* Template Selector */
+.template-selector {
+    margin: 10px 0;
+}
+
+#noteTemplate {
+    padding: 8px 12px;
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    background-color: #ffffff;
+    color: #333333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#noteTemplate:hover,
+#noteTemplate:focus {
+    border-color: #6200ea;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(98, 0, 234, 0.2);
+}
+
+/* Auto-Save Indicator */
+.auto-save-indicator {
+    font-size: 12px;
+    color: #666666;
+    margin-right: 15px;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Theme Variations */
+body[data-theme="dark"] .export-btn,
+body[data-theme="dark"] .share-btn {
+    background-color: #bb86fc;
+}
+
+body[data-theme="dark"] .export-btn:hover,
+body[data-theme="dark"] .share-btn:hover {
+    background-color: #cfbcff;
+}
+
+body[data-theme="dark"] #noteTemplate {
+    background-color: #2d2d2d;
+    color: #ffffff;
+    border-color: #444444;
+}
+
+body[data-theme="dark"] .reminder-btn {
+    color: #bb86fc;
+}
+
+body[data-theme="dark"] .reminder-btn:hover {
+    color: #cfbcff;
+}
+
+body[data-theme="dark"] .auto-save-indicator {
+    color: #bbbbbb;
+}

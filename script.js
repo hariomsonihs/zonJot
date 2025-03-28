@@ -945,3 +945,161 @@ function saveNewNote() {
         localStorage.setItem('notes', JSON.stringify(notes));
     }
 });
+
+// 1. Export Notes Functionality
+document.getElementById('exportNotesBtn').addEventListener('click', () => {
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    if (notes.length === 0) {
+        showToast('No notes to export!');
+        return;
+    }
+
+    let exportContent = "ZenJot Notes Export\n\n";
+    notes.forEach((note, index) => {
+        exportContent += `Note ${index + 1}: ${note.title}\n`;
+        exportContent += `Category: ${note.category}\n`;
+        exportContent += `Content: ${note.content}\n`;
+        exportContent += `Tags: ${note.tags.join(', ')}\n`;
+        exportContent += `Date: ${note.date}\n\n`;
+    });
+
+    const blob = new Blob([exportContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ZenJot_Notes_${new Date().toLocaleString().replace(/[,:/]/g, '-')}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showToast('Notes exported successfully!');
+});
+
+// 2. Share Note Functionality
+document.getElementById('shareNoteBtn').addEventListener('click', () => {
+    const title = document.getElementById('viewNoteTitle').textContent;
+    const content = document.getElementById('viewNoteContent').textContent;
+
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: content,
+            url: window.location.href
+        }).then(() => {
+            showToast('Note shared successfully!');
+        }).catch((error) => {
+            console.error('Error sharing:', error);
+            showToast('Failed to share note.');
+        });
+    } else {
+        const shareText = `${title}\n${content}`;
+        navigator.clipboard.writeText(shareText).then(() => {
+            showToast('Note copied to clipboard!');
+        }).catch(() => {
+            showToast('Failed to copy note.');
+        });
+    }
+});
+
+// 3. Reminder Functionality (New Note)
+document.getElementById('setReminderBtn').addEventListener('click', () => {
+    const reminderDate = prompt('Enter reminder date and time (e.g., 2025-03-29 14:00):');
+    if (reminderDate) {
+        const reminderTime = new Date(reminderDate).getTime();
+        if (isNaN(reminderTime)) {
+            showToast('Invalid date format!');
+            return;
+        }
+        document.getElementById('saveNoteBtn').dataset.reminder = reminderTime;
+        showToast(`Reminder set for ${new Date(reminderTime).toLocaleString()}`);
+    }
+});
+
+// Reminder Functionality (Edit Note)
+document.getElementById('editSetReminderBtn').addEventListener('click', () => {
+    const reminderDate = prompt('Enter reminder date and time (e.g., 2025-03-29 14:00):');
+    if (reminderDate) {
+        const reminderTime = new Date(reminderDate).getTime();
+        if (isNaN(reminderTime)) {
+            showToast('Invalid date format!');
+            return;
+        }
+        document.getElementById('saveEditNoteBtn').dataset.reminder = reminderTime;
+        showToast(`Reminder set for ${new Date(reminderTime).toLocaleString()}`);
+    }
+});
+
+// Check reminders periodically
+setInterval(() => {
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    const now = Date.now();
+    notes.forEach((note, index) => {
+        if (note.reminder && now >= note.reminder && !note.reminderNotified) {
+            showToast(`Reminder: ${note.title}`);
+            note.reminderNotified = true;
+            localStorage.setItem('notes', JSON.stringify(notes));
+        }
+    });
+}, 60000); // Check every minute
+
+// 4. Note Templates Functionality
+document.getElementById('noteTemplate').addEventListener('change', (e) => {
+    const template = e.target.value;
+    const editor = document.getElementById('newNoteContent');
+    editor.innerHTML = '';
+
+    switch (template) {
+        case 'meeting':
+            editor.innerHTML = `
+                <h3>Meeting Notes</h3>
+                <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+                <p><strong>Attendees:</strong></p>
+                <ul><li></li></ul>
+                <p><strong>Agenda:</strong></p>
+                <ol><li></li></ol>
+                <p><strong>Action Items:</strong></p>
+                <ul><li></li></ul>
+            `;
+            break;
+        case 'todo':
+            editor.innerHTML = `
+                <h3>To-Do List</h3>
+                <ul>
+                    <li><input type="checkbox"> Task 1</li>
+                    <li><input type="checkbox"> Task 2</li>
+                    <li><input type="checkbox"> Task 3</li>
+                </ul>
+            `;
+            break;
+        case 'journal':
+            editor.innerHTML = `
+                <h3>Journal Entry</h3>
+                <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+                <p><strong>Mood:</strong></p>
+                <p><strong>Thoughts:</strong></p>
+            `;
+            break;
+        default:
+            editor.innerHTML = '';
+    }
+});
+
+// 5. Auto-Save Functionality
+function setupAutoSave(editorId, indicatorId, saveBtnId) {
+    const editor = document.getElementById(editorId);
+    const indicator = document.getElementById(indicatorId);
+    let timeout;
+
+    editor.addEventListener('input', () => {
+        indicator.textContent = 'Saving...';
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            indicator.textContent = 'Saved';
+            // Your existing save logic should handle the actual saving
+            // This just updates the indicator
+        }, 1000); // Show "Saved" after 1 second of inactivity
+    });
+}
+
+// Setup auto-save for both editors
+setupAutoSave('newNoteContent', 'autoSaveIndicator', 'saveNoteBtn');
+setupAutoSave('editNoteContent', 'editAutoSaveIndicator', 'saveEditNoteBtn');
