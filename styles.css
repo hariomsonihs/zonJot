@@ -528,27 +528,58 @@ body {
 }
 
 .add-note-btn {
+    /* Positioning - fixed to bottom right */
     position: fixed;
     bottom: 30px;
     right: 30px;
+    
+    /* Size and shape */
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background-color: var(--primary-color);
-    color: white;
+    
+    /* Colors */
+    background-color: #6200ea; /* Purple to match modern app design */
     border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    
+    /* Flexbox for centering icon */
     display: flex;
-    align-items: center;
     justify-content: center;
-    z-index: 100;
+    align-items: center;
+    
+    /* Shadow and effects */
+    box-shadow: 0 4px 15px rgba(98, 0, 234, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    
+    /* Remove default button styling */
+    padding: 0;
+    outline: none;
 }
 
+/* Icon styling */
+.add-note-btn i {
+    color: white;
+    font-size: 24px;
+}
+
+/* Hover effect */
 .add-note-btn:hover {
-    background-color: var(--secondary-color);
-    transform: scale(1.05);
+    background-color: #7c4dff; /* Lighter purple */
+    transform: translateY(-3px); /* Slight lift */
+    box-shadow: 0 6px 20px rgba(98, 0, 234, 0.4);
+}
+
+/* Active/click effect */
+.add-note-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 10px rgba(98, 0, 234, 0.2);
+}
+
+/* Focus effect for accessibility */
+.add-note-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(98, 0, 234, 0.3);
 }
 
 .toast {
@@ -935,4 +966,162 @@ body {
 }
 .overlay.active {
     pointer-events: none; /* Allows clicks to pass through to editor */
+}
+#noteCategory {
+    /* Basic sizing and layout */
+    padding: 10px 15px;
+    width: 200px; /* Adjust as needed */
+    border-radius: 8px;
+    
+    /* Colors and border */
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    color: #333333;
+    
+    /* Typography */
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    
+    /* Remove default select styling */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    /* Add custom arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236200ea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 12px;
+    
+    /* Effects */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Hover effect */
+#noteCategory:hover {
+    border-color: #6200ea;
+    box-shadow: 0 4px 10px rgba(98, 0, 234, 0.1);
+}
+
+/* Focus effect */
+#noteCategory:focus {
+    outline: none;
+    border-color: #6200ea;
+    box-shadow: 0 0 0 3px rgba(98, 0, 234, 0.2);
+}
+
+/* Option styling */
+#noteCategory option {
+    padding: 10px;
+    background-color: #ffffff;
+    color: #333333;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Theme variations */
+body[data-theme="dark"] #noteCategory {
+    background-color: #2d2d2d;
+    border-color: #444444;
+    color: #ffffff;
+}
+
+body[data-theme="dark"] #noteCategory option {
+    background-color: #2d2d2d;
+    color: #ffffff;
+}
+
+body[data-theme="blue"] #noteCategory {
+    border-color: #1976d2;
+}
+
+body[data-theme="green"] #noteCategory {
+    border-color: #2e7d32;
+}
+
+body[data-theme="purple"] #noteCategory {
+    border-color: #6200ea;
+}
+#addCategoryBtn {
+    /* Size and shape */
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    
+    /* Colors */
+    background-color: #6200ea;
+    border: none;
+    
+    /* Flexbox for centering icon */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Effects */
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease-in-out;
+    
+    /* Positioning */
+    z-index: 50;
+}
+
+/* Icon styling */
+#addCategoryBtn i {
+    color: white;
+    font-size: 18px;
+}
+
+/* Hover effect */
+#addCategoryBtn:hover {
+    background-color: #7c4dff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(98, 0, 234, 0.2);
+}
+
+/* Active effect */
+#addCategoryBtn:active {
+    transform: scale(0.95);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Focus effect for accessibility */
+#addCategoryBtn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(98, 0, 234, 0.3);
+}
+
+/* Theme variations */
+body[data-theme="dark"] #addCategoryBtn {
+    background-color: #bb86fc;
+}
+
+body[data-theme="dark"] #addCategoryBtn:hover {
+    background-color: #cfbcff;
+}
+
+body[data-theme="blue"] #addCategoryBtn {
+    background-color: #1976d2;
+}
+
+body[data-theme="blue"] #addCategoryBtn:hover {
+    background-color: #2196f3;
+}
+
+body[data-theme="green"] #addCategoryBtn {
+    background-color: #2e7d32;
+}
+
+body[data-theme="green"] #addCategoryBtn:hover {
+    background-color: #388e3c;
+}
+
+body[data-theme="purple"] #addCategoryBtn {
+    background-color: #6200ea;
+}
+
+body[data-theme="purple"] #addCategoryBtn:hover {
+    background-color: #7c4dff;
 }
