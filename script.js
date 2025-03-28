@@ -53,73 +53,84 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function setupEventListeners() {
-        // Add new note button
+        // Add new note button - using both click and touch events
         addNoteBtn.addEventListener('click', openNewNoteEditor);
+        addNoteBtn.addEventListener('touchend', openNewNoteEditor);
         
-        // Save new note
-        saveNoteBtn.addEventListener('click', saveNewNote);
+        // Save buttons - improved for mobile
+        saveNoteBtn.addEventListener('click', handleSaveNote);
+        saveNoteBtn.addEventListener('touchend', handleSaveNote);
         
-        // Cancel new note
+        saveEditNoteBtn.addEventListener('click', handleSaveEditNote);
+        saveEditNoteBtn.addEventListener('touchend', handleSaveEditNote);
+        
+        // Cancel buttons
         cancelNoteBtn.addEventListener('click', closeNewNoteEditor);
+        cancelNoteBtn.addEventListener('touchend', closeNewNoteEditor);
         
-        // Save edited note
-        saveEditNoteBtn.addEventListener('click', saveEditedNote);
-        
-        // Cancel edited note
         cancelEditNoteBtn.addEventListener('click', closeEditNoteEditor);
+        cancelEditNoteBtn.addEventListener('touchend', closeEditNoteEditor);
         
         // Image upload for new note
         imageUploadBtn.addEventListener('click', () => imageInput.click());
+        imageUploadBtn.addEventListener('touchend', () => imageInput.click());
         imageInput.addEventListener('change', handleImageUpload);
         removeImageBtn.addEventListener('click', removeImage);
+        removeImageBtn.addEventListener('touchend', removeImage);
         
         // Image upload for edit note
         editImageUploadBtn.addEventListener('click', () => editImageInput.click());
+        editImageUploadBtn.addEventListener('touchend', () => editImageInput.click());
         editImageInput.addEventListener('change', handleEditImageUpload);
         removeEditImageBtn.addEventListener('click', removeEditImage);
+        removeEditImageBtn.addEventListener('touchend', removeEditImage);
         
         // Voice note functionality
         voiceNoteBtn.addEventListener('click', toggleVoiceRecording);
+        voiceNoteBtn.addEventListener('touchend', toggleVoiceRecording);
         
         // Search functionality
         searchInput.addEventListener('input', searchNotes);
         clearSearchBtn.addEventListener('click', clearSearch);
+        clearSearchBtn.addEventListener('touchend', clearSearch);
         
         // Sort functionality
         sortBtn.addEventListener('click', toggleSortMethod);
+        sortBtn.addEventListener('touchend', toggleSortMethod);
         
         // Theme toggle
-        themeToggleBtn.addEventListener('click', function() {
-            themeOptionsContainer.classList.toggle('show');
-        });
-        
-        // Close theme options when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!themeToggleBtn.contains(e.target) && !themeOptionsContainer.contains(e.target)) {
-                themeOptionsContainer.classList.remove('show');
-            }
-        });
-        
-        // Theme selection
-        document.querySelectorAll('.theme-option').forEach(option => {
-            option.addEventListener('click', () => {
-                const theme = option.getAttribute('data-theme');
-                applyTheme(theme);
-                localStorage.setItem('theme', theme);
-                themeOptionsContainer.classList.remove('show');
-            });
-        });
+        themeToggleBtn.addEventListener('click', toggleThemeOptions);
+        themeToggleBtn.addEventListener('touchend', toggleThemeOptions);
         
         // Format buttons
         document.querySelectorAll('.format-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const command = this.getAttribute('data-command');
-                const value = this.getAttribute('data-value');
-                document.execCommand(command, false, value || null);
-                const activeEditor = newNoteContainer.classList.contains('active') ? newNoteContent : editNoteContent;
-                activeEditor.focus();
-            });
+            button.addEventListener('click', handleFormatButton);
+            button.addEventListener('touchend', handleFormatButton);
         });
+    }
+    
+    function toggleThemeOptions(e) {
+        e.preventDefault();
+        themeOptionsContainer.classList.toggle('show');
+    }
+    
+    function handleFormatButton(e) {
+        e.preventDefault();
+        const command = this.getAttribute('data-command');
+        const value = this.getAttribute('data-value');
+        document.execCommand(command, false, value || null);
+        const activeEditor = newNoteContainer.classList.contains('active') ? newNoteContent : editNoteContent;
+        activeEditor.focus();
+    }
+    
+    function handleSaveNote(e) {
+        e.preventDefault();
+        saveNewNote();
+    }
+    
+    function handleSaveEditNote(e) {
+        e.preventDefault();
+        saveEditedNote();
     }
     
     function setupVoiceRecognition() {
@@ -162,7 +173,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function toggleVoiceRecording() {
+    function toggleVoiceRecording(e) {
+        e.preventDefault();
         if (!voiceRecognition) {
             showToast('Voice recognition not supported in your browser');
             return;
@@ -214,7 +226,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function openNewNoteEditor() {
+    function openNewNoteEditor(e) {
+        if (e) e.preventDefault();
         closeEditNoteEditor();
         newNoteContainer.classList.add('active');
         createOverlay();
@@ -225,19 +238,24 @@ document.addEventListener('DOMContentLoaded', function() {
         removeImageBtn.style.display = 'none';
         imagePreview.src = '';
         imageInput.value = '';
+        
+        // Improved mobile focus handling
         setTimeout(() => {
-            newNoteContent.focus();
+            newNoteTitle.focus();
+            window.scrollTo(0, 0);
         }, 100);
     }
     
-    function closeNewNoteEditor() {
+    function closeNewNoteEditor(e) {
+        if (e) e.preventDefault();
         newNoteContainer.classList.remove('active');
         removeOverlay();
         currentImageDataUrl = null;
         imageInput.value = '';
     }
     
-    function openEditNoteEditor(noteId) {
+    function openEditNoteEditor(noteId, e) {
+        if (e) e.preventDefault();
         const note = notes.find(n => n.id === noteId);
         if (!note) return;
         
@@ -263,12 +281,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show edit container
         editNoteContainer.classList.add('active');
         createOverlay();
+        
+        // Improved mobile focus handling
         setTimeout(() => {
-            editNoteContent.focus();
+            editNoteTitle.focus();
+            window.scrollTo(0, 0);
         }, 100);
     }
     
-    function closeEditNoteEditor() {
+    function closeEditNoteEditor(e) {
+        if (e) e.preventDefault();
         editNoteContainer.classList.remove('active');
         removeOverlay();
         currentlyEditingId = null;
@@ -279,6 +301,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function createOverlay() {
         const overlay = document.createElement('div');
         overlay.className = 'overlay active';
+        overlay.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeNewNoteEditor();
+            closeEditNoteEditor();
+        });
+        overlay.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            closeNewNoteEditor();
+            closeEditNoteEditor();
+        });
         document.body.appendChild(overlay);
     }
     
@@ -315,14 +347,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function removeImage() {
+    function removeImage(e) {
+        if (e) e.preventDefault();
         currentImageDataUrl = null;
         imagePreview.style.display = 'none';
         removeImageBtn.style.display = 'none';
         imageInput.value = '';
     }
     
-    function removeEditImage() {
+    function removeEditImage(e) {
+        if (e) e.preventDefault();
         currentEditImageDataUrl = null;
         editImagePreview.style.display = 'none';
         removeEditImageBtn.style.display = 'none';
@@ -374,7 +408,8 @@ document.addEventListener('DOMContentLoaded', function() {
         closeEditNoteEditor();
     }
     
-    function deleteNote(noteId) {
+    function deleteNote(noteId, e) {
+        if (e) e.preventDefault();
         if (confirm('Are you sure you want to delete this note?')) {
             notes = notes.filter(note => note.id !== noteId);
             saveNotes();
@@ -413,13 +448,15 @@ document.addEventListener('DOMContentLoaded', function() {
         renderNotes(filteredNotes);
     }
     
-    function clearSearch() {
+    function clearSearch(e) {
+        if (e) e.preventDefault();
         searchInput.value = '';
         clearSearchBtn.style.display = 'none';
         renderNotes(notes);
     }
     
-    function toggleSortMethod() {
+    function toggleSortMethod(e) {
+        if (e) e.preventDefault();
         currentSortMethod = currentSortMethod === 'newest' ? 'oldest' : 'newest';
         sortBtn.innerHTML = `<i class="fas fa-sort"></i> ${currentSortMethod === 'newest' ? 'Newest First' : 'Oldest First'}`;
         sortNotes();
@@ -482,26 +519,40 @@ document.addEventListener('DOMContentLoaded', function() {
             
             notesList.appendChild(noteElement);
             
-            // Add click event to edit note
+            // Add click event to edit note - improved for mobile
             noteElement.addEventListener('click', function(e) {
-                // Only open editor if clicking on the note content, not delete button or image
-                const isDeleteBtn = e.target.classList.contains('delete-note') || 
-                                  e.target.classList.contains('fa-trash') ||
-                                  e.target.closest('.delete-note');
-                const isImage = e.target.classList.contains('note-image');
-                
-                if (!isDeleteBtn && !isImage) {
-                    openEditNoteEditor(note.id);
-                }
+                handleNoteClick(e, note.id);
+            });
+            noteElement.addEventListener('touchend', function(e) {
+                handleNoteClick(e, note.id);
             });
             
             // Add delete button event
             const deleteBtn = noteElement.querySelector('.delete-note');
             deleteBtn.addEventListener('click', function(e) {
+                e.preventDefault();
                 e.stopPropagation();
-                deleteNote(note.id);
+                deleteNote(note.id, e);
+            });
+            deleteBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                deleteNote(note.id, e);
             });
         });
+    }
+    
+    function handleNoteClick(e, noteId) {
+        // Only open editor if clicking on the note content, not delete button or image
+        const isDeleteBtn = e.target.classList.contains('delete-note') || 
+                          e.target.classList.contains('fa-trash') ||
+                          e.target.closest('.delete-note');
+        const isImage = e.target.classList.contains('note-image');
+        
+        if (!isDeleteBtn && !isImage) {
+            e.preventDefault();
+            openEditNoteEditor(noteId, e);
+        }
     }
     
     function applyTheme(theme) {
